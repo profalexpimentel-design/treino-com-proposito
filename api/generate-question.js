@@ -18,7 +18,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { subject, level, difficulty } = req.body;
+    const body =
+  typeof req.body === "string"
+    ? JSON.parse(req.body)
+    : req.body;
+
+const { subject, level, difficulty } = body;
 
     return res.status(200).json({
       success: true,
