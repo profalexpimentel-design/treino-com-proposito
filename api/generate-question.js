@@ -1,48 +1,27 @@
 export default async function handler(req, res) {
+  // CORS básico
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
-  // 👇 ESSA PARTE É ESSENCIAL
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
 
-    const { subject, level, difficulty } = req.body || {};
+  if (req.method !== "POST") {
+    return res.status(405).json({ message: "Use POST" });
+  }
 
-    if (!subject || !level || !difficulty) {
-      return res.status(400).json({
-        success: false,
-        message: "Campos obrigatórios faltando"
-      });
-    }
+  const { subject, level, difficulty } = req.body || {};
 
-    if (!process.env.OPENAI_API_KEY) {
-      return res.status(500).json({
-        success: false,
-        message: "OPENAI_API_KEY não configurada"
-      });
-    }
+  if (!subject || !level || !difficulty) {
+    return res.status(400).json({
+      success: false,
+      message: "Campos obrigatórios faltando"
+    });
+  }
 
-    const prompt = `
-Gere uma questão de matemática para ${level}
-sobre "${subject}" com dificuldade "${difficulty}".
-
-Retorne SOMENTE JSON:
-{
-  "enunciado": "",
-  "alternativas": {
-    "A": "",
-    "B": "",
-    "C": "",
-    "D": "",
-    "E": ""
-  },
-  "resposta": "",
-  "resolucao": ""
-}
-`;
-
+  try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -52,10 +31,13 @@ Retorne SOMENTE JSON:
       body: JSON.stringify({
         model: "gpt-4o-mini",
         messages: [
-          { role: "user", content: prompt }
+          {
+            role: "user",
+            content: `Gere uma questão de matemática para ${level} sobre ${subject} com dificuldade ${difficulty}. Retorne JSON.`
+          }
         ],
         temperature: 0.5,
-        max_tokens: 800
+        max_tokens: 700
       })
     });
 
@@ -63,22 +45,12 @@ Retorne SOMENTE JSON:
 
     const text = data?.choices?.[0]?.message?.content;
 
-    if (!text) {
-      return res.status(500).json({
-        success: false,
-        message: "Resposta vazia da OpenAI",
-        raw: data
-      });
-    }
-
     return res.status(200).json({
       success: true,
       data: JSON.parse(text)
     });
 
   } catch (error) {
-    console.error(error);
-
     return res.status(500).json({
       success: false,
       message: "Erro interno",
