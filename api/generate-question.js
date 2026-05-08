@@ -1,12 +1,7 @@
-import OpenAI from "openai";
-
 export default async function handler(req, res) {
   try {
     if (req.method !== "POST") {
-      return res.status(405).json({
-        success: false,
-        message: "Use POST"
-      });
+      return res.status(405).json({ message: "Use POST" });
     }
 
     const { subject, level, difficulty } = req.body || {};
@@ -21,13 +16,9 @@ export default async function handler(req, res) {
     if (!process.env.OPENAI_API_KEY) {
       return res.status(500).json({
         success: false,
-        message: "OPENAI_API_KEY não configurada no Vercel"
+        message: "OPENAI_API_KEY não configurada"
       });
     }
-
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
 
     const prompt = `
 Gere uma questão de matemática para ${level}
@@ -36,43 +27,49 @@ sobre "${subject}" com dificuldade "${difficulty}".
 Retorne SOMENTE JSON:
 {
   "enunciado": "",
-  "alternativas": {"A":"","B":"","C":"","D":"","E":""},
+  "alternativas": {
+    "A": "",
+    "B": "",
+    "C": "",
+    "D": "",
+    "E": ""
+  },
   "resposta": "",
   "resolucao": ""
 }
 `;
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.5,
-      max_tokens: 800,
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.5,
+        max_tokens: 800
+      })
     });
 
-    const text = completion.choices?.[0]?.message?.content;
+    const data = await response.json();
+
+    const text = data?.choices?.[0]?.message?.content;
 
     if (!text) {
       return res.status(500).json({
         success: false,
-        message: "Resposta vazia da OpenAI"
-      });
-    }
-
-    let data;
-
-    try {
-      data = JSON.parse(text);
-    } catch (err) {
-      return res.status(500).json({
-        success: false,
-        message: "IA não retornou JSON válido",
-        raw: text
+        message: "Resposta vazia da OpenAI",
+        raw: data
       });
     }
 
     return res.status(200).json({
       success: true,
-      data
+      data: JSON.parse(text)
     });
 
   } catch (error) {
