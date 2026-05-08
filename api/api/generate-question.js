@@ -14,6 +14,7 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
+
   const { subject, level, difficulty } = req.body;
 
   if (!subject || !level || !difficulty) {
