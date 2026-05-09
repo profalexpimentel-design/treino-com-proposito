@@ -18,9 +18,14 @@ export default async function handler(req, res) {
   }
 
   try {
-    const body = req.body || {};
+   const body =
+  typeof req.body === "string"
+    ? JSON.parse(req.body)
+    : (req.body || {});
 
-const { subject, level, difficulty } = body;
+const subject = body.subject || "frações";
+const level = body.level || "6º ano";
+const difficulty = body.difficulty || "média";
 
     return res.status(200).json({
       success: true,
