@@ -67,13 +67,13 @@ function App() {
     try {
 
       const response = await axios.post(
-        `${API_URL}/api/ai/generate-question`,
-        {
-          subject: assunto,
-          level: serie,
-          difficulty: nivel
-        }
-      );
+  "/api/generate-question",
+  {
+    subject: assunto,
+    level: serie,
+    difficulty: nivel
+  }
+);
 
       // 🔥 DADOS CORRETOS
       const data = response.data.data;
