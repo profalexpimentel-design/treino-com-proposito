@@ -35,9 +35,10 @@ const { subject, level, difficulty } = body;
     });
 
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Erro interno"
-    });
-  }
+  return res.status(500).json({
+    success: false,
+    error: error.message,
+    fullError: String(error)
+  });
+}
 }
