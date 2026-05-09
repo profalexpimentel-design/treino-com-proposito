@@ -2,10 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 
 // 🔥 URL DO BACKEND VIA .ENV
-const API_URL =
-  process.env.REACT_APP_API_URL ||
-  "https://treino-com-proposito.vercel.app";
-
+const API_URL = "";
 const ASSUNTOS = {
   fundamental: [
     "Números naturais",
