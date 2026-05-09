@@ -25,6 +25,14 @@
       "dest": "/frontend/build/logo512.png"
     },
     {
+      "src": "/foto.png",
+      "dest": "/frontend/build/foto.png"
+    },
+    {
+      "src": "/fundo.jpg",
+      "dest": "/frontend/build/fundo.jpg"
+    },
+    {
       "src": "/(.*)",
       "dest": "/frontend/build/index.html"
     }
