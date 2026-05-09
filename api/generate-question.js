@@ -34,7 +34,7 @@ const { subject, level, difficulty } = body;
       }
     });
 
-  } catch (error) {
+ } catch (error) {
   return res.status(500).json({
     success: false,
     error: error.message,
