@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import axios from "axios";
 
+console.log("deploy atualizado");
+
 // 🔥 URL DO BACKEND VIA .ENV
 const API_URL = "";
 const ASSUNTOS = {
