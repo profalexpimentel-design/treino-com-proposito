@@ -39,7 +39,7 @@ export default async function handler(req, res) {
       message: "Use POST",
     });
   }
-
+console.log("REQ_BODY:", req.body);
   try {
     const body = req.body || {};
 
