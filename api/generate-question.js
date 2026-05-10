@@ -4,6 +4,24 @@ const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+function tryParseJSON(text) {
+  // tentativa direta
+  try {
+    return { ok: true, parsed: JSON.parse(text) };
+  } catch (e) {
+    // extrair primeiro objeto JSON encontrado no texto
+    const match = text.match(/{[\s\S]*}/);
+    if (match) {
+      try {
+        return { ok: true, parsed: JSON.parse(match[0]) };
+      } catch (e2) {
+        return { ok: false, error: e2.message, raw: text };
+      }
+    }
+    return { ok: false, error: e.message, raw: text };
+  }
+}
+
 export default async function handler(req, res) {
   // CORS
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -15,21 +33,28 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  // Somente POST
   if (req.method !== "POST") {
     return res.status(405).json({
       success: false,
       message: "Use POST",
     });
   }
+
   try {
     const body = req.body || {};
 
-    const subject = body.subject || "frações";
-    const level = body.level || "6º ano";
-    const difficulty = body.difficulty || "média";
+text
 
-    const prompt = `
+Collapse
+
+
+ Copy
+
+const subject = body.subject || "frações";
+const level = body.level || "6º ano";
+const difficulty = body.difficulty || "média";
+
+const prompt = `
 Gere uma questão de matemática para ${level}
 sobre o assunto "${subject}"
 com dificuldade "${difficulty}".
@@ -50,26 +75,64 @@ Retorne SOMENTE um JSON válido no formato:
 }
 `;
 
-    const completion = await client.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      temperature: 0.5,
-      max_tokens: 800,
-    });
+text
 
-    const text = completion.choices[0].message.content;
-    const parsed = JSON.parse(text);
+Collapse
 
-    return res.status(200).json({
-      success: true,
-      data: parsed,
-    });
+
+ Copy
+
+const completion = await client.chat.completions.create({
+  model: "gpt-4o-mini",
+  messages: [
+    {
+      role: "user",
+      content: prompt,
+    },
+  ],
+  temperature: 0.5,
+  max_tokens: 800,
+});
+
+const text = completion.choices?.[0]?.message?.content || "";
+
+// log para debug (aparecerá nos logs do Vercel)
+console.log("MODEL_TEXT:", text);
+
+const result = tryParseJSON(text);
+
+if (!result.ok) {
+  // enviar resposta de erro com o texto bruto para facilitar debug
+  return res.status(500).json({
+    success: false,
+    error: "Invalid JSON from model",
+    details: result.error,
+    modelText: result.raw,
+  });
+}
+
+const parsed = result.parsed;
+
+// validação mínima
+if (
+  !parsed?.enunciado ||
+  !parsed?.alternativas ||
+  !parsed?.resposta ||
+  !parsed?.resolucao
+) {
+  return res.status(500).json({
+    success: false,
+    error: "Parsed JSON missing required fields",
+    parsed,
+  });
+}
+
+return res.status(200).json({
+  success: true,
+  data: parsed,
+});
   } catch (error) {
+    console.error("HANDLER_ERROR:", error);
     return res.status(500).json({
       success: false,
       error: error.message,
