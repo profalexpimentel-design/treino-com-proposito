@@ -38,8 +38,7 @@ export default async function handler(req, res) {
     });
   }
 
-  console.log("REQ_BODY:", req.body);
-
+  
   try {
     const body = req.body || {};
 
@@ -82,7 +81,6 @@ const completion = await client.chat.completions.create({
 
 const text = completion.choices?.[0]?.message?.content || "";
 
-console.log("MODEL_TEXT:", text);
 
 const result = tryParseJSON(text);
 
