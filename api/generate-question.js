@@ -5,11 +5,9 @@ const client = new OpenAI({
 });
 
 function tryParseJSON(text) {
-  // tentativa direta
   try {
     return { ok: true, parsed: JSON.parse(text) };
   } catch (e) {
-    // extrair primeiro objeto JSON encontrado no texto
     const match = text.match(/{[\s\S]*}/);
     if (match) {
       try {
@@ -39,16 +37,11 @@ export default async function handler(req, res) {
       message: "Use POST",
     });
   }
-console.log("REQ_BODY:", req.body);
+
+  console.log("REQ_BODY:", req.body);
+
   try {
     const body = req.body || {};
-
-text
-
-Collapse
-
-
- Copy
 
 const subject = body.subject || "frações";
 const level = body.level || "6º ano";
@@ -75,13 +68,6 @@ Retorne SOMENTE um JSON válido no formato:
 }
 `;
 
-text
-
-Collapse
-
-
- Copy
-
 const completion = await client.chat.completions.create({
   model: "gpt-4o-mini",
   messages: [
@@ -96,13 +82,11 @@ const completion = await client.chat.completions.create({
 
 const text = completion.choices?.[0]?.message?.content || "";
 
-// log para debug (aparecerá nos logs do Vercel)
 console.log("MODEL_TEXT:", text);
 
 const result = tryParseJSON(text);
 
 if (!result.ok) {
-  // enviar resposta de erro com o texto bruto para facilitar debug
   return res.status(500).json({
     success: false,
     error: "Invalid JSON from model",
@@ -113,7 +97,6 @@ if (!result.ok) {
 
 const parsed = result.parsed;
 
-// validação mínima
 if (
   !parsed?.enunciado ||
   !parsed?.alternativas ||
