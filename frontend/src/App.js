@@ -65,7 +65,7 @@ function App() {
     try {
 
       const response = await axios.post(
-  "/api/generate-question",
+  "/api/generate-question.js",
   {
     subject: assunto,
     level: serie,
